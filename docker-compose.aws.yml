@@ -1,0 +1,17 @@
+# Apply on EC2: docker compose -f docker-compose.yml -f docker-compose.aws.yml up -d
+services:
+  api:
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: /cloud-restreamer/api
+        awslogs-stream: api
+  nginx:
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: /cloud-restreamer/nginx
+        awslogs-stream: nginx
+

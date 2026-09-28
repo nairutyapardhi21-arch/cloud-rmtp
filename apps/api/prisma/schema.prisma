@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StreamStatus {
+  IDLE
+  CONNECTING
+  LIVE
+  STOPPING
+  STOPPED
+  ERROR
+}
+
+enum DestinationStatus {
+  DISCONNECTED
+  CONNECTING
+  CONNECTED
+  RECONNECTING
+  FAILED
+}
+
+model User {
+  id String @id @default(cuid())
+  name String
+  email String @unique
+  createdAt DateTime @default(now())
+  streams Stream[]
+}
+
+model Stream {
+  id String @id @default(cuid())
+  userId String
+  name String
+  streamKeyHash String @unique
+  status StreamStatus @default(IDLE)
+  createdAt DateTime @default(now())
+  startedAt DateTime?
+  stoppedAt DateTime?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinations Destination[]
+  sessions StreamSession[]
+  events StreamEvent[]
+}
+
+model Destination {
+  id String @id @default(cuid())
+  streamId String
+  platform String
+  enabled Boolean @default(false)
+  status DestinationStatus @default(DISCONNECTED)
+  secretReference String?
+  createdAt DateTime @default(now())
+  stream Stream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  events StreamEvent[]
+}
+
+model StreamSession {
+  id String @id @default(cuid())
+  streamId String
+  startedAt DateTime @default(now())
+  endedAt DateTime?
+  status StreamStatus @default(CONNECTING)
+  stream Stream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+}
+
+model StreamEvent {
+  id String @id @default(cuid())
+  streamId String
+  destinationId String?
+  type String
+  message String
+  timestamp DateTime @default(now())
+  stream Stream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  destination Destination? @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+}

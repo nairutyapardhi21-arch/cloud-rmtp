@@ -1,0 +1,15 @@
+{
+  "name": "cloud-restreamer",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm run dev --workspace @cloud-restreamer/api",
+    "dev:web": "npm run dev --workspace @cloud-restreamer/web",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspace @cloud-restreamer/api",
+    "db:push": "npm run db:push --workspace @cloud-restreamer/api"
+  },
+  "engines": { "node": ">=22" }
+}
+

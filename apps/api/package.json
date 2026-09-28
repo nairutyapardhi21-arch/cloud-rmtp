@@ -1,0 +1,26 @@
+{
+  "name": "@cloud-restreamer/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "tsc --noEmit",
+    "test": "tsx --test src/*.test.ts",
+    "db:push": "prisma db push",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.900.0",
+    "@fastify/cors": "^11.0.0",
+    "@fastify/formbody": "^8.0.0",
+    "@prisma/client": "^6.16.0",
+    "fastify": "^5.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "prisma": "^6.16.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: restreamer
+      POSTGRES_USER: restreamer
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-before-demo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U restreamer -d restreamer"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://restreamer:${POSTGRES_PASSWORD:-change-me-before-demo}@postgres:5432/restreamer?schema=public
+      API_PORT: 3001
+      RTMP_INTERNAL_URL: rtmp://nginx/live
+      PUBLIC_RTMP_URL: ${PUBLIC_RTMP_URL:-rtmp://localhost/live}
+      AWS_REGION: ${AWS_REGION:-ap-south-1}
+      YOUTUBE_RTMP_URL: ${YOUTUBE_RTMP_URL:-}
+      TWITCH_RTMP_URL: ${TWITCH_RTMP_URL:-}
+      LINKEDIN_RTMP_URL: ${LINKEDIN_RTMP_URL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3001:3001"
+    restart: unless-stopped
+
+  nginx:
+    image: alfg/nginx-rtmp:latest
+    depends_on: [api]
+    volumes:
+      # alfg/nginx-rtmp renders nginx.conf from this template on startup.
+      - ./streaming/nginx/nginx.conf:/etc/nginx/nginx.conf.template:ro
+    ports:
+      - "1935:1935"
+      - "127.0.0.1:8081:80"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on: [api]
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
